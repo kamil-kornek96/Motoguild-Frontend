@@ -1,6 +1,6 @@
 # Motoguild-Frontend
 
-##### Welcome page
+# Welcome page
 Welcome page is displayed as a first page when you open site. You need to register and log in to have acces to other pages. This page have also mobile styling to test my CSS Skills.
 
 Desktop
