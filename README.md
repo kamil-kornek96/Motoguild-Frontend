@@ -2,7 +2,7 @@
 
 ###### Welcome page
 Welcome page is displayed as a first page when you open site. You need to register and log in to have acces to other pages.
-![Welcome page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/screen%201.png)
+![Welcome page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/1.png)
 
 ###### Home page
 Home page is first page you will see after log in. There you find most useful information and basic chat
