@@ -6,10 +6,9 @@ Welcome page is displayed as a first page when you open site. You need to regist
 Desktop
 ![Welcome page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/1.png)
 
-Mobile
-![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/7mobile.png)
- 
-![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/8mobile.png)
+Mobile  
+![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/7mobile.png)  
+![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/8mobile.png)  
 
 ###### Home page
 Home page is first page you will see after log in. There you find most useful information and basic chat
