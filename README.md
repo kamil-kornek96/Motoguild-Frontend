@@ -16,7 +16,7 @@ Home page is first page you will see after log in. There you find most useful in
 
 ## Add new group page
 On these page you can add new group to the site. On these page you have oppotrunity to test uploading group photo feature via our API.
-![Rides page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/6.png)
+![Rides page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/e50454a89b86474bbe036abeec89a3c7d1a36cdf/readme_files/6.png)
 
 ## Add new ride page
 On these page you can add new ride to the site.
