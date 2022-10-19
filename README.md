@@ -8,6 +8,7 @@ Desktop
 
 Mobile
 ![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/7mobile.png)
+ 
 ![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/8mobile.png)
 
 ###### Home page
