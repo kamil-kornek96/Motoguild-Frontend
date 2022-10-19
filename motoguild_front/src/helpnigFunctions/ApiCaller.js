@@ -1,7 +1,3 @@
-import GetCookie from "../hooks/getCookie";
-import RemoveCookie from "../hooks/removeCookie";
-import SetCookie from "../hooks/setCookie";
-
 export async function getGroup(currentGroup) {
   try {
     const res = await fetch(
@@ -80,6 +76,25 @@ export async function createNewRoute(newRoute) {
       },
       body: JSON.stringify(newRoute),
     });
+    const data = await res.json();
+    return data.id;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createNewGroup(newGroup) {
+  try {
+    const res = await fetch("https://localhost:3333/api/groups/", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(newGroup),
+    });
+    const data = await res.json();
+    return data.id;
   } catch (error) {
     console.log(error);
   }
@@ -95,6 +110,25 @@ export async function createNewRide(newRide) {
       },
       body: JSON.stringify(newRide),
     });
+    const data = await res.json();
+    return data.id;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function joinRide(userId) {
+  try {
+    const res = await fetch("https://localhost:3333/api/rides", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(newRide),
+    });
+    const data = await res.json();
+    return data.id;
   } catch (error) {
     console.log(error);
   }
@@ -166,6 +200,18 @@ export async function createNewPost(route, id, post) {
   }
 }
 
+export async function uploadGroupImage(image) {
+  try {
+    const res = await fetch(`https://localhost:3333/api/upload/GroupPictures`, {
+      method: "POST",
+      body: image,
+    });
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function getRides(currentPage, itemsPerPage) {
   try {
     const res = await fetch(
@@ -203,7 +249,7 @@ export async function getRoutes(currentPage, itemsPerPage) {
 export async function getUserData(id) {
   try {
     const res = await fetch(
-      `https://localhost:3333/api/user/${id}`,
+      `https://localhost:3333/api/user/${id}?selectedData=true`,
       {
         headers: {
           "Content-type": "application/json",
@@ -249,15 +295,12 @@ export async function getRoute(id) {
 
 export async function getPostsForFeed() {
   try {
-    const res = await fetch(
-      "https://localhost:3333/api/feed/1/post?orderByDate=true",
-      {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+    const res = await fetch("https://localhost:3333/api/feed/1/post", {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
+    });
     const data = await res.json();
     return data;
   } catch (error) {
@@ -306,7 +349,7 @@ export async function loginUser(user) {
       body: JSON.stringify(user),
     });
     const resposne = await res.text();
-    if (resposne.length > 90) {
+    if (resposne.length > 96) {
       localStorage.setItem("token", resposne);
     }
   } catch (error) {
@@ -325,20 +368,22 @@ export async function testLogin() {
     const data = await res.text();
     return data;
   } catch (error) {
-    console.log("XD");
     console.log(error);
   }
 }
 
 export async function addUserToGroup(groupId) {
   try {
-    const res = await fetch(`https://localhost:3333/api/groups/${groupId}/participants/1`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `bearer ${localStorage.getItem("token")}`,
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/participants/logged`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
       }
-    });
+    );
   } catch (error) {
     console.log(error);
   }
@@ -346,13 +391,33 @@ export async function addUserToGroup(groupId) {
 
 export async function addUserToGroupsPendingUsers(groupId) {
   try {
-    const res = await fetch(`https://localhost:3333/api/groups/${groupId}/pendingusers/1`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `bearer ${localStorage.getItem("token")}`,
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/pendingusers/1`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
       }
-    });
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function addUserToPrivateGroup(groupId, userId) {
+  try {
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/participants/${userId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
   } catch (error) {
     console.log(error);
   }
@@ -360,12 +425,59 @@ export async function addUserToGroupsPendingUsers(groupId) {
 
 export async function deleteLoggedUserFromGroup(groupId) {
   try {
-    const res = await fetch(`https://localhost:3333/api/groups/${groupId}/participants/logged`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `bearer ${localStorage.getItem("token")}`,
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/participants/logged`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
       }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function addLoggedUserToRide(rideId) {
+  try {
+    const res = await fetch(
+      `https://localhost:3333/api/rides/${rideId}/participants/logged`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteLoggedUserFromRide(rideId) {
+  try {
+    const res = await fetch(
+      `https://localhost:3333/api/rides/${rideId}/participants/logged`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteGroupImage(imageName) {
+  try {
+    const res = await fetch(`https://localhost:3333/api/upload/${imageName}`, {
+      method: "DELETE",
     });
   } catch (error) {
     console.log(error);
@@ -374,13 +486,33 @@ export async function deleteLoggedUserFromGroup(groupId) {
 
 export async function deleteUserFromGroup(groupId, userId) {
   try {
-    const res = await fetch(`https://localhost:3333/api/groups/${groupId}/participants/${userId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `bearer ${localStorage.getItem("token")}`,
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/participants/${userId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
       }
-    });
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteUserFromPendingUsers(groupId, userId) {
+  try {
+    const res = await fetch(
+      `https://localhost:3333/api/groups/${groupId}/pendingusers/${userId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
   } catch (error) {
     console.log(error);
   }
@@ -401,3 +533,57 @@ export async function getLoggedUserData() {
   }
 }
 
+export async function ProfileData(id) {
+  try {
+    let res = await fetch(
+      `https://localhost:3333/api/users/${id}?profile=true`,
+      {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createNewEvent(newEvent) {
+  try {
+    const res = await fetch("https://localhost:3333/api/events", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(newEvent),
+    });
+    const data = await res.json();
+    return data.id;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getEvents(currentPage, itemsPerPage) {
+  try {
+    const res = await fetch(
+      `https://localhost:3333/api/events?page=${currentPage}&itemsperpage=${itemsPerPage}`
+    );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getEvent(id) {
+  try {
+    const res = await fetch(`https://localhost:3333/api/events/${id}`);
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}

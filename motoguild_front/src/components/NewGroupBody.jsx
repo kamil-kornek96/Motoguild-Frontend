@@ -6,161 +6,198 @@ import { Rating } from "react-simple-star-rating";
 import SmallMap from "./SmallMap.jsx";
 import { useLoadScript } from "@react-google-maps/api";
 import DateFrontToBack from "../helpnigFunctions/DateFrontToBack";
-import { createNewRide } from "../helpnigFunctions/ApiCaller";
-import { Link } from "react-router-dom";
+import {
+  createNewGroup,
+  uploadGroupImage,
+  deleteGroupImage,
+} from "../helpnigFunctions/ApiCaller";
+import { Link, useNavigate } from "react-router-dom";
 
 const libraries = ["places"];
-export default function NewRideBody() {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
-  const [mapInfo, setMapInfo] = useState([]);
-  const [isValidRide, setIsValidRide] = useState(true);
-  const [newRide, setNewRide] = useState({
+export default function NewGroupBody() {
+  const [isValidGroup, setIsValidGroup] = useState(false);
+  const [localImage, setLocalImage] = useState();
+  const [isNameCorrect, setIsNameCorrect] = useState(true);
+  const [isDescriptionCorrect, setIsDescriptionCorrect] = useState(true);
+
+  const [newGroup, setNewGroup] = useState({
     name: "",
     description: "",
-    rideDate: "",
-    rideHour: "",
-    estimation: 0,
-    route: {},
-    minimumRating: 0,
-    Owner: {
-      id: 1,
-      userName: "b-man",
-      email: "www@665.pl",
-      rating: 0,
-    },
+    isPrivate: false,
+    groupImage: "",
   });
-  const [routes, setRoutes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRoute, setIsRoute] = useState(false);
+  const [imagePath, setImagePath] = useState("");
+  const [styles, setStyles] = useState({
+    backgroundImage: "url('https://localhost:3333/api/upload/noimage')",
+  });
+  const navigate = useNavigate();
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setNewRide((prevState) => ({
+    setNewGroup((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   }
-  async function handleSubmit(event) {
-    if (
-      newRide.name.length < 4 ||
-      newRide.description.length < 4 ||
-      newRide.rideDate === "" ||
-      newRide.rideHour === "" ||
-      !isRoute
-    ) {
-      event.preventDefault();
-      setIsValidRide(false);
-      return;
+
+  function checkIfNameIsCorrect()
+  {
+    if (newGroup.name.length < 5 || newGroup.name.length > 25)
+    {
+      setIsNameCorrect(false)
+      return false
     }
-    setIsValidRide(true);
-    const newDate = DateFrontToBack(newRide.rideDate, newRide.rideHour);
-    const rideTosave = {
-      name: newRide.name,
-      description: newRide.description,
-      owner: newRide.Owner,
-      minimumRating: newRide.minimumRating,
-      estimation: newRide.estimation,
-      startTime: newDate,
-      route: newRide.route,
-    };
-    await createNewRide(rideTosave);
+    else {
+      setIsNameCorrect(true)
+      return true
+    }
   }
 
-  function handleRating(rate) {
-    rate = rate / 20;
-    setNewRide((prevState) => ({
+  function checkIfDescriptionIsCorrect()
+  {
+    if (newGroup.description.length < 5 || newGroup.description.length > 150)
+    {
+      setIsDescriptionCorrect(false)
+      return false
+    }
+    else {
+      setIsDescriptionCorrect(true)
+      return true
+    }
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const isName = await checkIfNameIsCorrect();
+    const isDescription = checkIfDescriptionIsCorrect();
+    if (
+      !isName ||
+      !isDescription
+    ) {
+      event.preventDefault();
+      setIsValidGroup(false);
+      return;
+    }
+    setIsValidGroup(true);
+    const res = await uploadImage(localImage);
+    const groupToSave = await {
+      name: newGroup.name,
+      description: newGroup.description,
+      isPrivate: newGroup.isPrivate,
+      groupImage: res,
+    };
+    const newGroupId = await createNewGroup(await groupToSave);
+    navigate(`/groups/${newGroupId}`);
+  }
+
+  function handlePrivate() {
+    setNewGroup((prevState) => ({
       ...prevState,
-      minimumRating: rate,
+      isPrivate: true,
     }));
   }
 
-  useEffect(() => {
-    async function fetchAllRoutes() {
-      const data = await getAllRoutes();
-      setRoutes(data);
-      setIsLoading(false);
+  function handlePublic() {
+    setNewGroup((prevState) => ({
+      ...prevState,
+      isPrivate: false,
+    }));
+  }
+
+  async function uploadImage(files) {
+    if (files)
+    {
+      const data = new FormData();
+      data.append("file", files[0]);
+      const res = await uploadGroupImage(data);
+      const path = await res.text();
+      await setImagePath(path);
+      var string = `https://localhost:3333/api/upload/GroupPictures/${path}`;
+      setStyles({
+        backgroundImage: `url(${string})`,
+      });
+      return path;
     }
-    fetchAllRoutes();
-  }, []);
+    return "";
+    
+  }
+
+  function handleLocalImage(e) {
+    setLocalImage(e.target.files);
+  }
+
+  async function handleDeletePhoto() {
+    await deleteGroupImage(imagePath);
+    setImagePath("");
+  }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="create-ride-body">
-        <div className="left-column">
-          <label name="name">Nazwa przejazdu</label>
-          <input
-            className="standard-input"
-            type="text"
-            name="name"
-            value={newRide.name}
-            onChange={handleChange}
-          ></input>
-          <label name="rideDate">Data przejazdu</label>
-          <input
-            className="standard-input"
-            type="date"
-            name="rideDate"
-            value={newRide.rideDate}
-            onChange={handleChange}
-          ></input>
-          <label name="rideHour">Godzina przejazdu</label>
-          <input
-            className="standard-input"
-            type="time"
-            name="rideHour"
-            value={newRide.rideHour}
-            onChange={handleChange}
-          ></input>
-          <br></br>
-          <Rating
-            initialValue={0}
-            readonly={false}
-            size={70}
-            className="ride-info-text-stars"
-            onClick={handleRating}
-          />
-        </div>
-        <div className="right-column">
-          <label name="description">Krótki opis</label>
-          <textarea
-            className="description-input"
-            type="text"
-            name="description"
-            value={newRide.description}
-            onChange={handleChange}
-          ></textarea>
-          <p>Wybierz istniejącą trasę:</p>
-          {!isLoading && (
-            <CustomAutocomplete
-              saveRoute={setNewRide}
-              setIsRoute={setIsRoute}
-              routes={routes}
-            />
-          )}
-          {isLoaded && isRoute && (
-            <SmallMap
-              isLoaded={isLoaded}
-              size={3}
-              originPoint={newRide.route.startPlace}
-              destinationPoint={newRide.route.endingPlace}
-              setMapInfo={setMapInfo}
-            />
-          )}
-          {!isValidRide && (
-            <p className="error-message">Uzupełnij wszystkie pola!</p>
-          )}
-        </div>
-
-        <button className="standard-button">Stwórz</button>
-      </form>
-      <Link to={`/create-route`}>
-        <button>
-          Dodaj nową trasę lub wybierz istniejącą w wyszukiwarce powyżej
+    <div className="create-group-body">
+      <form onSubmit={handleSubmit}>
+        <label name="name" className="label-custom">
+          Nazwa grupy<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+        </label>
+        <input
+          className="standard-input"
+          type="text"
+          name="name"
+          value={newGroup.name}
+          onChange={handleChange}
+        ></input>
+         {!isNameCorrect && <p className="error-message">Nazwa trasy musi mieć od 5 do 25 znaków!</p>}
+        <label name="description" className="label-custom">
+          Krótki opis<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+        </label>
+        <textarea
+          className="description-input"
+          type="text"
+          name="description"
+          value={newGroup.description}
+          onChange={handleChange}
+          checked={false}
+        ></textarea>
+        {!isDescriptionCorrect && <p className="error-message">Opis trasy musi mieć od 5 do 150 znaków!</p>}
+        <label className="label-custom">Publiczna grupa</label>
+        <input
+          type="radio"
+          name="radio"
+          value={false}
+          onChange={handlePublic}
+          checked={newGroup.isPrivate === false}
+        ></input>
+        <label className="label-custom">Prywatna grupa</label>
+        <input
+          type="radio"
+          name="radio"
+          onChange={handlePrivate}
+          value={true}
+          checked={newGroup.isPrivate === true}
+        ></input>
+        <br></br>
+        {imagePath != "" && (
+          <div className="create-group-photo-container">
+            <label className="label-custom">Zdjęcie grupy</label>
+            <div className="create-group-photo" style={styles}></div>
+            <span
+              className="create-group-photo-delete-text"
+              onClick={handleDeletePhoto}
+            >
+              Usuń zdjęcie
+            </span>
+          </div>
+        )}
+        <input
+          type="file"
+          name="file"
+          onChange={handleLocalImage}
+          placeholder="Upload an image"
+        ></input>
+        <br></br>
+        <button className="btn btn-secondary create-group-submit-btn">
+          Stwórz
         </button>
-      </Link>
+      </form>
     </div>
   );
 }

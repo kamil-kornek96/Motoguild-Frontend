@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
-import "./App.css";
-import { BrowserRouter as Router, Route, Routes , Outlet, Navigate} from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Homepage from "./pages/Homepage";
 import CreateRidePage from "./pages/CreateRidePage";
 import CreateRoutePage from "./pages/CreateRoutePage";
 import CreateGroupPage from "./pages/CreateGroupPage";
@@ -13,50 +17,52 @@ import AllRoutesPage from "./pages/AllRoutesPage";
 import RoutePage from "./pages/RoutePage";
 import GroupPage from "./pages/GroupPage";
 import StartPage from "./pages/StartPage";
-import ProfilPage from "./pages/ProfilPage";
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import CreateEventPage from "./pages/CreateEventPage";
+import AllEventsPage from "./pages/AllEventsPage";
+import EventPage from "./pages/EventPage";
+import ProfilePage from "./pages/ProfilPage";
 
 function App() {
   const ProtectedRoute = () => {
-    
-    if (!localStorage.getItem('token')) {
-      return <Navigate to='/' replace />;
+    if (!localStorage.getItem("token")) {
+      return <Navigate to="/" replace />;
     }
-  
-    return <Outlet />
+
+    return <Outlet />;
   };
-  const [isToken, setIsToken] = useState(false)
+  const [isToken, setIsToken] = useState(false);
 
-    useEffect(()=> {
-      if (localStorage.getItem('token'))
-      {
-        setIsToken(true)
-        
-      }
-      else{
-        setIsToken(false)
-      }
-
-    },[localStorage.getItem('token')])
-
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      setIsToken(true);
+    } else {
+      setIsToken(false);
+    }
+  }, [localStorage.getItem("token")]);
 
   return (
     <div className="App">
       <Router>
-      {isToken && <Navbar />}
+        {isToken && <Navbar />}
         <Routes>
           <Route element={<ProtectedRoute />}>
-            {/* <Route path="/" element={<Homepage />} /> */}
             <Route path="create-ride" element={<CreateRidePage />} />
             <Route path="create-route" element={<CreateRoutePage />} />
-            <Route path="groups" element={<AllGroupsPage />}/>
-            <Route path="groups/:id" element={<GroupPage />}/>
-            <Route path="profile" element={<ProfilPage />}/>
-            <Route path="/rides" element={<AllRidesPage />}/>
-            <Route path="/rides/:id" element={<RidePage />}/>
-            <Route path="/routes" element={<AllRoutesPage />}/>
-            <Route path="/routes/:id" element={<RoutePage />}/>
+            <Route path="create-group" element={<CreateGroupPage />} />
+            <Route path="groups" element={<AllGroupsPage />} />
+            <Route path="groups/:id" element={<GroupPage />} />
+            <Route path="/rides" element={<AllRidesPage />} />
+            <Route path="/rides/:id" element={<RidePage />} />
+            <Route path="/routes" element={<AllRoutesPage />} />
+            <Route path="/routes/:id" element={<RoutePage />} />
           </Route>
           <Route path="/" element={<StartPage />} />
+          <Route exact path="/events" element={<AllEventsPage />}></Route>
+          <Route exact path="/events/:id" element={<EventPage />}></Route>
+          <Route exact path="/create-event" element={<CreateEventPage />}></Route>
+          <Route exact path="/profile" element={<ProfilePage />}></Route>
         </Routes>
       </Router>
     </div>

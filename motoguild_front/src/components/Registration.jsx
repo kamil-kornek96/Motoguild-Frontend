@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { createUser } from "../helpnigFunctions/ApiCaller";
 
-const Registration = () => {
+const Registration = (props) => {
   const [user, setUser] = useState({
     userName: "",
     email: "",
@@ -38,10 +38,19 @@ const Registration = () => {
     await createUser(user);
   }
 
+  function handleBackToLogin() {
+    props.setIsRegistration(false);
+  }
+
   return (
     <div className="register-form-container">
       <form onSubmit={handleSubmit}>
-        <label name="userName">Nazwa użytkownika</label>
+        <p className="back-to-login-text" onClick={handleBackToLogin}>
+          <i class="bi bi-arrow-left"></i> Wróć do logowania
+        </p>
+        <label className="label-custom" name="userName">
+          Nazwa użytkownika
+        </label>
         <input
           className="input-login-register"
           type="text"
@@ -49,7 +58,9 @@ const Registration = () => {
           value={user.userName}
           onChange={handleChange}
         ></input>
-        <label name="email">Adres e-mail</label>
+        <label className="label-custom" name="email">
+          Adres e-mail
+        </label>
         <input
           className="input-login-register"
           type="email"
@@ -57,7 +68,9 @@ const Registration = () => {
           value={user.email}
           onChange={handleChange}
         ></input>
-        <label name="password">Hasło</label>
+        <label className="label-custom" name="password">
+          Hasło
+        </label>
         <input
           className="input-login-register"
           type="password"
@@ -65,7 +78,9 @@ const Registration = () => {
           value={user.password}
           onChange={handleChange}
         ></input>
-        <label name="passwordConfirm">Potwierdź hasło</label>
+        <label className="label-custom" name="passwordConfirm">
+          Potwierdź hasło
+        </label>
         <input
           className="input-login-register"
           type="password"
@@ -77,7 +92,7 @@ const Registration = () => {
           <p className="error-message">Wprowadź prawidłowe dane!</p>
         )}
         <br></br>
-        <button className="btn btn-secondary">Zarejestruj</button>
+        <button className="btn btn-dark custom-red-button">Zarejestruj</button>
       </form>
     </div>
   );

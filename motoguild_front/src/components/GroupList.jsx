@@ -5,12 +5,11 @@ import { getGroups, getLoggedUserData } from "../helpnigFunctions/ApiCaller";
 
 export default function GroupList() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [paginationData, setPaginationData] = useState(null);
   const [allGroups, setAllGroups] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState({});
-
 
   useEffect(() => {
     async function getUser() {
@@ -43,13 +42,13 @@ export default function GroupList() {
             name={group.name}
             owner={group.owner}
             isPrivate={group.isPrivate}
+            groupImage={group.groupImage}
             rating={group.rating}
             participants={group.participants}
             pending={group.pendingUsers}
             description={group.description}
-            user = {user}
+            user={user}
           />
-          
         ))}
       {!isLoading && (
         <Pagination
@@ -57,6 +56,7 @@ export default function GroupList() {
           setCurrentPage={setCurrentPage}
         />
       )}
+      <br></br>
     </div>
   );
 }

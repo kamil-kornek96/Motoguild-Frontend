@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import BigMap from "./BigMap.jsx";
 import { createNewRoute } from "../helpnigFunctions/ApiCaller.js";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Link, useNavigate } from "react-router-dom";
 
 const libraries = ["places"];
 export default function NewRouteBody() {
+  const navigate = useNavigate();
   const originRef = useRef();
   const destinationRef = useRef();
   const stop1Ref = useRef();
@@ -12,13 +15,19 @@ export default function NewRouteBody() {
   const [isDestination, setIsDestination] = useState(false);
   const [isStop1, setIsStop1] = useState(false);
   const [isStop1Saved, setIsStop1Saved] = useState(false);
-  const [stops, setStops] = useState([]);
-  const [stop1, setStop1] = useState({name: 'Stop1', place: '', description: 'Opis' });
+  const [stopsToSave, setStopsToSave] = useState([]);
+  const [stopsChangeCounter, setStopsChangeCounter] = useState(0);
+  const [stop1, setStop1] = useState({
+    name: "Stop1",
+    place: "",
+    description: "Opis",
+  });
   // {place: "poznań"}
   // {id: 1, name: 'Stop1', place: 'Warszawa', description: 'Opis'}
 
-
   const [allInputsCorrect, setAllInputsCorrect] = useState(true);
+  const [isNameCorrect, setIsNameCorrect] = useState(true);
+  const [isDescriptionCorrect, setIsDescriptionCorrect] = useState(true);
 
   const [newRoute, setNewRoute] = useState({
     name: "",
@@ -27,7 +36,7 @@ export default function NewRouteBody() {
     description: "",
     rating: 0,
     owner: { id: 1, userName: "b-man", email: "www@665.pl", rating: 0 },
-
+    stops: [],
   });
 
   const [coordinates, setCoordinates] = useState({
@@ -56,32 +65,58 @@ export default function NewRouteBody() {
   }
 
   function handleChangeStop1(event) {
-    setIsStop1(false);
+    // setIsStop1(false);
     const { name, value } = event.target;
-    setStops([]);
-    setIsStop1Saved(false)
+    // setIsStop1Saved(false);
     setStop1((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   }
 
+  function checkIfNameIsCorrect()
+  {
+    if (newRoute.name.length < 5 || newRoute.name.length > 25)
+    {
+      setIsNameCorrect(false)
+      return false
+    }
+    else {
+      setIsNameCorrect(true)
+      return true
+    }
+  }
+
+  function checkIfDescriptionIsCorrect()
+  {
+    if (newRoute.description.length < 5 || newRoute.description.length > 150)
+    {
+      setIsDescriptionCorrect(false)
+      return false
+    }
+    else {
+      setIsDescriptionCorrect(true)
+      return true
+    }
+  }
+
   async function handleSubmit(event) {
-    // event.preventDefault()
+    const isName = await checkIfDescriptionIsCorrect();
+    const isDescription = await checkIfNameIsCorrect();
     if (
-      newRoute.description === "" ||
-      newRoute.endingPlace === "" ||
-      newRoute.startPlace === "" ||
-      newRoute.name === ""
+      !isOrigin ||
+      !isDestination ||
+      !isDescription ||
+      !isName
     ) {
-      console.log(stops)
-      console.log(stop1)
       event.preventDefault();
       setAllInputsCorrect(false);
       return;
     }
     setAllInputsCorrect(true);
-    await createNewRoute(newRoute);
+    event.preventDefault();
+    const newRouteId = await createNewRoute(newRoute);
+    navigate(`/routes/${newRouteId}`);
   }
   function handleSelectOrigin() {
     setNewRoute((prevState) => ({
@@ -103,39 +138,55 @@ export default function NewRouteBody() {
       ...prevState,
       place: stop1Ref.current.value,
     }));
-    
+
     setIsStop1(true);
   }
 
-  function saveStop1()
-  {
-    const stop1Exists = stops.some(element => {
-      if (element.name === 'Stop1') {
+  function saveStop1() {
+    const stop1Exists = stopsToSave.some((element) => {
+      if (element.place === stop1.place) {
         return true;
       }
       return false;
-    })
-    if(isStop1 && !stop1Exists)
-    {
-      setStops((prevState) => ([...prevState, stop1]))
-      setIsStop1Saved(true)
+    });
+    if (isStop1 && !stop1Exists) {
+      setStopsToSave((prevState) => [...prevState, stop1]);
+      setIsStop1Saved(true);
     }
   }
-  
+
+  const handleRemoveStop = (e) => {
+    setStopsToSave(
+      stopsToSave.filter((item) => item.place != e.target.outerText)
+    );
+  };
+
+  useEffect(() => {
+    setNewRoute((prevState) => ({
+      ...prevState,
+      stops: stopsToSave,
+    }));
+  }, [stopsToSave]);
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="create-ride-body">
+    <div className="create-route-body">
+      <form onSubmit={handleSubmit}>
         <div className="left-column">
-          <label name="name">Nazwa trasy</label>
+          <label className="label-custom" name="name">
+            Nazwa trasy<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+          </label>
           <input
             className="standard-input"
             type="text"
             name="name"
             value={newRoute.name}
             onChange={handleChange}
+            placeholder="Wpisz nazwę trasy"
           ></input>
-          <label name="startPoint">Początek trasy</label>
+          {!isNameCorrect && <p className="error-message">Nazwa trasy musi mieć od 5 do 25 znaków!</p>}
+          <label className="label-custom" name="startPoint">
+            Początek trasy<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+          </label>
           {isLoaded && (
             <Autocomplete onPlaceChanged={handleSelectOrigin}>
               <input
@@ -148,7 +199,9 @@ export default function NewRouteBody() {
               ></input>
             </Autocomplete>
           )}
-          <label name="endPoint">Koniec trasy</label>
+          <label className="label-custom" name="endPoint">
+            Koniec trasy<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+          </label>
           {isLoaded && (
             <div>
               <Autocomplete onPlaceChanged={handleSelectDestination}>
@@ -163,11 +216,11 @@ export default function NewRouteBody() {
               </Autocomplete>
             </div>
           )}
-        </div>
-        <div className="right-column">
-        <label name="place">Dodaj przystanek:</label>
+          <label className="label-custom" name="place">
+            Dodaj przystanek:
+          </label>
           {isLoaded && (
-            <div>
+            <div className="add-stops-container">
               <Autocomplete onPlaceChanged={handleSelectStop1}>
                 <input
                   className="standard-input"
@@ -178,38 +231,118 @@ export default function NewRouteBody() {
                   ref={stop1Ref}
                 ></input>
               </Autocomplete>
-              <button type="button" onClick={saveStop1}>Dodaj</button>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={saveStop1}
+              >
+                Dodaj
+              </button>
             </div>
           )}
-          <label name="description">Krótki opis</label>
+          {stopsToSave.length > 0 && (
+            <DragDropContext
+              onDragEnd={(param) => {
+                const source = param.source.index;
+                let destination = null;
+                if (param.destination) {
+                  destination = param.destination.index;
+                }
+                if (destination) {
+                  stopsToSave.splice(
+                    destination,
+                    0,
+                    stopsToSave.splice(source, 1)[0]
+                  );
+                  setStopsToSave(stopsToSave);
+                  setStopsChangeCounter((prevState) => prevState + 1);
+                }
+              }}
+            >
+              <p className="added-stops-header">Dodane przystanki:</p>
+              <Droppable droppableId="droppable-1">
+                {(provided, snapshot) => (
+                  <div ref={provided.innerRef}>
+                    {stopsToSave.map((stop, i) => (
+                      <Draggable
+                        key={stop.place}
+                        draggableId={`draggable-${stop.place}`}
+                        index={i}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            className="stops-list"
+                            key={stop.place}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              boxShadow: snapshot.isDragging
+                                ? "0 0 .4rem #666"
+                                : "none",
+                            }}
+                          >
+                            <p>
+                              <i
+                                {...provided.dragHandleProps}
+                                className="bi bi-grip-horizontal"
+                              ></i>
+                              <i
+                                onClick={handleRemoveStop}
+                                className="delete-button bi bi-trash3"
+                              >
+                                {stop.place}
+                              </i>
+                            </p>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
+          <label className="label-custom" name="description">
+            Krótki opis<span className="error-message small-message"><i className="bi bi-asterisk"></i></span>
+          </label>
           <textarea
             className="description-input"
             type="text"
             name="description"
             value={newRoute.description}
             onChange={handleChange}
+            placeholder="Dodaj krótki opis..."
           ></textarea>
-        </div>
-        <div>
-          <button type="submit" className="standard-button">Stwórz</button>
+          {!isDescriptionCorrect && <p className="error-message">Opis trasy musi mieć od 5 do 150 znaków!</p>}
+          <button
+            type="submit"
+            className="btn btn-secondary create-route-submit-btn"
+          >
+            Stwórz
+          </button>
           {!allInputsCorrect && (
             <p className="error-message">
-              Musisz uzupełnić wszystkie pola, żeby stworzyć nową trasę
+              <span className="error-message small-message"><i className="bi bi-asterisk"></i></span>Uzupełnij wszystkie wymagane pola!
             </p>
           )}
         </div>
+        <div className="right-column">
+          {isLoaded && (
+            <BigMap
+              coordinates={coordinates}
+              originRef={originRef}
+              destinationRef={destinationRef}
+              isOrigin={isOrigin}
+              isDestination={isDestination}
+              stops={stopsToSave}
+              isStops={isStop1Saved}
+              stopsChange={stopsChangeCounter}
+            />
+          )}
+        </div>
       </form>
-      {isLoaded && (
-        <BigMap
-          coordinates={coordinates}
-          originRef={originRef}
-          destinationRef={destinationRef}
-          isOrigin={isOrigin}
-          isDestination={isDestination}
-          stops={stops}
-          isStops={isStop1Saved}
-        />
-      )}
     </div>
   );
 }
