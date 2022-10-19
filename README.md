@@ -1,6 +1,6 @@
 # Motoguild-Frontend
 
-###### Welcome page
+##### Welcome page
 Welcome page is displayed as a first page when you open site. You need to register and log in to have acces to other pages. This page have also mobile styling to test my CSS Skills.
 
 Desktop
@@ -10,11 +10,11 @@ Mobile
 ![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/7mobile.png)  
 ![Welcome page mobile](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/8mobile.png)  
 
-###### Home page
+#### Home page
 Home page is first page you will see after log in. There you find most useful information and basic chat
 ![Home page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/2.png)
 
-###### Add new group page
+### Add new group page
 On these page you can add new group to the site. On these page you have oppotrunity to test uploading group photo feature via our API.
 ![Rides page](https://raw.githubusercontent.com/kamil-kornek96/Motoguild-Frontend/main/readme_files/6.png)
 
